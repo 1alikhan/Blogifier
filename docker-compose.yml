@@ -1,9 +1,7 @@
-version: "2.4"
-
 services:
 
   mysql:
-    image: mysql:latest
+    image: mysql:8.0
     container_name: example_mysql
     command:
       - --default-authentication-plugin=mysql_native_password
@@ -31,8 +29,11 @@ services:
     image: dorthl/blogifier:latest
     restart: always
     build: .
+    depends_on:
+      - mysql
+      - redis
     ports:
-      - '8080:80'
+      - '8080:8080'
     environment:
       TZ: 'Asia/Shanghai'
       Blogifier__DbProvider: MySql
@@ -40,5 +41,5 @@ services:
       Blogifier__Redis: redis:6379,password=blogifier,defaultDatabase=0
     volumes:
       - ./deploy/data/blogifier/app_data:/opt/blogifier/App_Data
-    mem_limit: 256MB
+    mem_limit: 512MB
 

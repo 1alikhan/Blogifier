@@ -360,3 +360,5 @@ appsettings.Development.json
 dist
 
 package-lock.json
+.claude/settings.local.json
+Blogifier/deploy/data/redis/data/dump.rdb
