@@ -12,6 +12,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS run
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 RUN apk add --no-cache icu-libs
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+ENV ASPNETCORE_URLS=http://+:8080
 COPY --from=sdk /opt/blogifier/dist /opt/blogifier/
 WORKDIR /opt/blogifier
 ENTRYPOINT ["dotnet", "Blogifier.dll"]
