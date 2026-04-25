@@ -1,18 +1,13 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS sdk
-# TOTO zh-CH
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 RUN apk add --no-cache npm
-# Copy everything else and build
 COPY ./ /opt/blogifier
 WORKDIR /opt/blogifier
-RUN ["dotnet","publish", "-c", "Release","/p:RuntimeIdentifier=linux-musl-x64", "./src/Blogifier/Blogifier.csproj","-o","dist" ]
+RUN dotnet publish -c Release /p:RuntimeIdentifier=linux-musl-x64 ./src/Blogifier/Blogifier.csproj -o dist
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS run
-# TOTO zh-CH
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
 RUN apk add --no-cache icu-libs
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV ASPNETCORE_URLS=http://+:8080
-COPY --from=sdk /opt/blogifier/dist /opt/blogifier/
+COPY --from=build /opt/blogifier/dist /opt/blogifier/
 WORKDIR /opt/blogifier
 ENTRYPOINT ["dotnet", "Blogifier.dll"]

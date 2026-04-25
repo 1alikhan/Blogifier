@@ -1,8 +1,6 @@
 services:
-
   mysql:
     image: mysql:8.0
-    container_name: example_mysql
     command:
       - --default-authentication-plugin=mysql_native_password
       - --character-set-server=utf8mb4
@@ -11,34 +9,35 @@ services:
       - --performance_schema=off
     restart: always
     environment:
-      TZ: "Asia/Shanghai"
-      MYSQL_ROOT_PASSWORD: blogifier
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme_strong_password}
+      MYSQL_DATABASE: blogifier
     volumes:
-      - ./deploy/data/mysql/data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
 
   redis:
     image: redis:alpine
-    container_name: example_redis
     restart: always
-    command: --requirepass "blogifier"
+    command: --requirepass "${REDIS_PASSWORD:-changeme_redis_password}"
     volumes:
-      - ./deploy/data/redis/data:/data
+      - redis_data:/data
 
   blogifier:
-    container_name: example_blogifier
-    image: dorthl/blogifier:latest
-    restart: always
     build: .
+    restart: always
     depends_on:
       - mysql
       - redis
     environment:
-      TZ: 'Asia/Shanghai'
       Blogifier__DbProvider: MySql
-      Blogifier__ConnString: Server=mysql;Database=blogifier;User=root;Password=blogifier;
-      Blogifier__Redis: redis:6379,password=blogifier,defaultDatabase=0
-      ASPNETCORE_URLS: http://+:8080
+      Blogifier__ConnString: "Server=mysql;Database=blogifier;User=root;Password=${MYSQL_ROOT_PASSWORD:-changeme_strong_password};"
+      Blogifier__Redis: "redis:6379,password=${REDIS_PASSWORD:-changeme_redis_password},defaultDatabase=0"
+      Blogifier__Salt: "${BLOGIFIER_SALT:-change-this-to-a-random-secret}"
+      ASPNETCORE_URLS: "http://+:8080"
     volumes:
-      - ./deploy/data/blogifier/app_data:/opt/blogifier/App_Data
+      - blogifier_data:/opt/blogifier/App_Data
     mem_limit: 512MB
 
+volumes:
+  mysql_data:
+  redis_data:
+  blogifier_data:
