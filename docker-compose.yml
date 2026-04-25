@@ -9,7 +9,7 @@ services:
       - --performance_schema=off
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme_strong_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: blogifier
     volumes:
       - mysql_data:/var/lib/mysql
@@ -17,7 +17,7 @@ services:
   redis:
     image: redis:alpine
     restart: always
-    command: --requirepass "${REDIS_PASSWORD:-changeme_redis_password}"
+    command: --requirepass "${REDIS_PASSWORD}"
     volumes:
       - redis_data:/data
 
@@ -29,9 +29,9 @@ services:
       - redis
     environment:
       Blogifier__DbProvider: MySql
-      Blogifier__ConnString: "Server=mysql;Database=blogifier;User=root;Password=${MYSQL_ROOT_PASSWORD:-changeme_strong_password};"
-      Blogifier__Redis: "redis:6379,password=${REDIS_PASSWORD:-changeme_redis_password},defaultDatabase=0"
-      Blogifier__Salt: "${BLOGIFIER_SALT:-change-this-to-a-random-secret}"
+      Blogifier__ConnString: "Server=mysql;Database=blogifier;User=root;Password=${MYSQL_ROOT_PASSWORD};"
+      Blogifier__Redis: "redis:6379,password=${REDIS_PASSWORD},defaultDatabase=0"
+      Blogifier__Salt: "${BLOGIFIER_SALT}"
       ASPNETCORE_URLS: "http://+:8080"
     volumes:
       - blogifier_data:/opt/blogifier/App_Data
