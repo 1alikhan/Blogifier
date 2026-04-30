@@ -13,31 +13,31 @@ services:
       MYSQL_DATABASE: blogifier
     volumes:
       - mysql_data:/var/lib/mysql
-
-  redis:
-    image: redis:alpine
-    restart: always
-    command: --requirepass "${REDIS_PASSWORD}"
-    volumes:
-      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
 
   blogifier:
     build: .
     restart: always
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
     environment:
       Blogifier__DbProvider: MySql
       Blogifier__ConnString: "Server=mysql;Database=blogifier;User=root;Password=${MYSQL_ROOT_PASSWORD};"
-      Blogifier__Redis: "redis:6379,password=${REDIS_PASSWORD},defaultDatabase=0"
+      Blogifier__Redis: ""
       Blogifier__Salt: "${BLOGIFIER_SALT}"
       ASPNETCORE_URLS: "http://+:8080"
     volumes:
       - blogifier_data:/opt/blogifier/App_Data
     mem_limit: 512MB
+    ports:
+      - "8080:8080"
 
 volumes:
   mysql_data:
-  redis_data:
   blogifier_data:
